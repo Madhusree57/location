@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Map with Custom Paths</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+    .container {
+        margin-top: 10px;
+    }
+    .route-map { 
+      padding: 10px; 
+      margin: 5px 0; 
+      border-left: 3px 
+      solid rgb(8, 234, 34); 
+    } 
+    .route-map > li { 
+      color: #333; 
+    } 
+    .distance-covered { 
+      margin-top: 15px; 
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="container">
+    <label for="first-select"> Source </label>
+    <select id="first-select" onchange="updateSecondSelect(this.value)">
+      <option value="Gate">Gate</option>
+      <option value="A">A</option>
+      <option value="SF">SF</option>
+      <option value="C">C</option>
+      <option value="HR">HR</option>
+      <option value="E">E</option>
+      <option value="Auditorium">Auditorium</option>
+      <option value="Mandapam">Mandapam</option>
+      <option value="ExamHall">Exam Hall</option>
+      <option value="Office">Office</option>
+      <option value="Cafeteria">Cafeteria</option>
+      <option value="L">L</option>
+    </select>
+    <label for="second-select"> Destination </label>
+    <select id="second-select" onchange="updateFirstSelect(this.value)">
+      <option value="Gate">Gate</option>
+      <option value="A" selected>A</option>
+      <option value="SF">SF</option>
+      <option value="C">C</option>
+      <option value="HR">HR</option>
+      <option value="E">E</option>
+      <option value="Auditorium">Auditorium</option>
+      <option value="Mandapam">Mandapam</option>
+      <option value="ExamHall">Exam Hall</option>
+      <option value="Office">Office</option>
+      <option value="Cafeteria">Cafeteria</option>
+      <option value="L">L</option>
+    </select>
+    <button class="search">Search Distance</button>
+    <div class="route-map"></div>
+    <div class="distance-covered"></div>
+  </div>
+ 
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script> 
+  function updateSecondSelect(e) { 
+    const firstSelect = document.getElementById('first-select'); 
+    const secondSelect = document.getElementById('second-select'); 
+    const selectedValue = firstSelect.value; 
+    const firstValue = secondSelect.value;
+    const options = ['Gate', 'A', 'SF', 'C', 'HR', 'E', 'Auditorium', 'Mandapam', 'ExamHall', 'Office', 'Cafeteria', 'L'].filter(option => option !== selectedValue); 
+    while (secondSelect.firstChild) { 
+      secondSelect.removeChild(secondSelect.firstChild); 
+    } 
+    options.forEach(option => { 
+      const newOption = document.createElement('option'); 
+      newOption.value = option; 
+      newOption.text = option; secondSelect.appendChild(newOption); 
+    });
+    firstSelect.value = e;
+    secondSelect.value = firstValue;
+  } 
+  function updateFirstSelect(e) { 
+    const secondSelect = document.getElementById('second-select'); 
+    const firstSelect = document.getElementById('first-select'); 
+    const selectedValue = secondSelect.value;
+    const firstValue = firstSelect.value;
+    const options = ['Gate', 'A', 'SF', 'C', 'HR', 'E', 'Auditorium', 'Mandapam', 'ExamHall', 'Office', 'Cafeteria', 'L'].filter(option => option !== selectedValue); 
+    while (firstSelect.firstChild) { 
+      firstSelect.removeChild(firstSelect.firstChild); 
+    } 
+    options.forEach(option => { 
+      const newOption = document.createElement('option'); 
+      newOption.value = option; 
+      newOption.text = option; 
+      firstSelect.appendChild(newOption); 
+    });
+    secondSelect.value = e;
+    firstSelect.value = firstValue;
+  }
+  </script>
+  <script>
+    // Initialize the map centered at the first coordinate
+    var map = L.map('map').setView([11.027436659103630, 77.00672826962975], 18);  // Start at the first location
+
+    // Add tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Define the coordinates and labels for each location
+    var locations = [
+      { coords: [11.026224282824966, 77.00662637007986], label: "Gate" },
+      { coords: [11.026524409872646, 77.00656315365006], label: "A" },
+      { coords: [11.02682190392046, 77.00654169597878], label: "SF" },
+      { coords: [11.02662657552037, 77.00686065811519], label: "B" },
+      { coords: [11.027386615256594, 77.00649073400751], label: "C" },
+      {coords: [11.027540147913546, 77.00649073400751], label: "HR"},
+      { coords: [11.027540147913546, 77.0067628572451], label: "examination_cell"},
+      // { coords: [11.027536659103653, 77.00672826962975], label: "Lakshmi_Nilayam"},
+      { coords: [11.027583730961156, 77.00612864783652], label: "E"},//
+      { coords: [11.0276588702649, 77.0068718484016], label: "office"},//
+      { coords: [11.027804452627175, 77.00720836195453], label: "cafeteria"},//
+      { coords: [11.027719920932611, 77.00661188768919], label: "grd mandapam"}, //
+      { coords: [11.027860807058804, 77.00611748387728], label: "golden jubilee auditorium"},//
+      { coords: [11.028202064274407, 77.00632002995442], label: "Q"},//
+      { coords: [11.028073701519466, 77.00673947575676], label: "L"},//
+      { coords: [11.02828659581414, 77.00670119933373], label: "M"},//
+      { coords: [11.028441570240192, 77.00673947576466], label: "R"},//
+      { coords: [11.02849948995433, 77.00661826709174], label: "S"},//
+      { coords: [11.028126925105278, 77.00719241347058], label: "MBA"},//
+      { coords: [11.028076832316723, 77.00756560859509], label: "Ground"},//
+      { coords: [11.027906925105278, 77.00725241347058], label: "P"}
+    ];
+
+    // Add markers for each location
+    // locations.forEach(function(location) {
+    //   var marker = L.marker(location.coords).addTo(map);
+    //   marker.bindPopup("<b>" + location.label + "</b>");
+    // });
+    locations.forEach(function(location) {
+  // Create a custom circular icon with the location name inside
+  var customIcon = L.divIcon({
+    className: 'custom-icon',
+    html: '<div style="background-color: transparent; color: #0078A8; padding: q0px; text-align: center; font-size: 12px; width: fit-content; height: fit-content; font-weight:600">' +
+          location.label +
+          '</div>',
+    iconSize: [30, 30],  // Size of the circle
+    iconAnchor: [15, 15], // Anchor the icon in the middle of the marker
+    popupAnchor: [0, -15] // Adjust the popup position if necessary
+  });
+
+  // Create a marker with the custom circular icon and add it to the map
+  var marker = L.marker(location.coords, { icon: customIcon }).addTo(map);
+});
+       
+   
+    // Define paths (custom lines between the points)
+    let paths = [
+      //Gate to A
+      [[11.026224282824966, 77.00662637007986], [11.026524409872646, 77.00662637007986],[11.026524409872646, 77.00656315365006]],
+      //A to SF main route
+      [[11.026524409872646, 77.00662637007986],[11.02682190392046, 77.00662637007986], [11.02682190392046, 77.00654169597878]],
+      //A to SF interconnected
+      [[11.026524409872646, 77.00656315365006], [11.02682190392046, 77.00654169597878]],
+      //SF to C
+      [[11.02682190392046, 77.00662637007986], [11.027386615256594, 77.00662637007986], [11.027386615256594, 77.00649073400751]],
+      //C to HR
+      [[11.027386615256594, 77.00662637007986], [11.027540147913546,  77.00662637007986], [11.027540147913546, 77.00649073400751]],
+      //C to Examination Hall
+      [[11.027540147913546, 77.00666641869309], [11.027540147913546, 77.00675883393176], [11.027540147913546, 77.0067628572451]],
+      //Exam cell to GRD mandapam
+      [[11.027540147913546, 77.00662943104973], [11.027719920932611, 77.00661188768919]],
+      //to office
+      [[11.027540147913546, 77.00662943104973],[11.027540147913546, 77.00681443376708], [11.0276588702649, 77.00681443376708], [11.0276588702649, 77.0068718484016]],
+      //office to cafeteria
+      [[11.0276588702649, 77.00681443376708], [11.027804452627175, 77.00681443376708], [11.027804452627175, 77.00720836195453]],
+      //Back gate to Ground
+      [[11.028327296174856, 77.00793880373023], [11.028076832316723, 77.00756560859509]],
+      //Ground to Road
+      [[11.028076832316723, 77.00756560859509], [11.028037697319732, 77.0071987928744]],
+      //Road to P block
+      [[11.028037697319732, 77.0071987928744],[11.027995431517125, 77.00719241347058]],
+      //Road to MBA block
+      [[11.028037697319732, 77.0071987928744], [11.028126925105278, 77.00719241347058]],
+      //Road to GRD mandapam route2
+      [[11.028037697319732, 77.0071987928744], [11.027967254311035, 77.00659115463141], [11.027870199472762, 77.00660710314101]],
+      //to L block
+      [ [11.027967254311035, 77.00659115463141], [11.028043958918634, 77.00659115463141]],
+      //road to seminar hall
+      [[11.028037697319732, 77.0071987928744],[11.028011085517836, 77.0070759893231],[11.028120663506222, 77.00706323051541]],
+      //Road to S block
+      [[11.02805648212237, 77.00729448390132], [11.028319469185243, 77.0072593971802], [11.028341384763205, 77.00730883755996], [11.02853862489127, 77.00728650964652], [11.028499489955754, 77.0066182670945], [11.028548017275028, 77.0066182670945]],
+      //to M block
+      [[11.027981342913533, 77.00674426030521],[11.028141013699162, 77.00673469119945], [11.028195802674233, 77.00696275488667], [11.028295988202261, 77.00694521152612], [11.028305380593764, 77.00689896084829]],
+      //to R block
+      [[11.028305380593764, 77.00689896084829],[11.028328861574572, 77.0068558998847], [11.028443135638025, 77.00682240801456], [11.028441570240192, 77.00673947576466]],
+      // R to S
+      [[11.028328861574572, 77.0068558998847], [11.028486966773864, 77.00679370069727], [11.02849948995433, 77.00661826709174]],
+      // S to Q
+      [[11.028486966773864, 77.00679370069727], [11.028411827680161, 77.00618765732479], [11.028202064274407, 77.0062386925555],[11.028202064274407, 77.00632002995442]],
+      // Q to M
+      [[11.028249026243927, 77.00624028740644], [11.028333557770148, 77.00670119933373], [11.02828659581414, 77.00670119933373]],
+      // Q to L
+      [[11.028242764648418, 77.00623709770453], [11.027935946305476, 77.00629291748811], [11.027986039118026, 77.00674266545869], [11.028073701519466, 77.00673947575676]],
+      //HR to E
+      [[11.027557119118475, 77.00641731586646], [11.02761973521417, 77.00640615190346], [11.027583730961156, 77.00612864783652]],
+      //HR to Auditorium
+      [[11.027557119118475, 77.00641731586646], [11.02761973521417, 77.00640615190346], [11.027860807058804, 77.00636947032886], [11.027860807058804, 77.00611748387728]],
+      // A to L
+      [[11.026524409872646, 77.00656315365006], [11.027550, 77.006612], [11.027582, 77.006593],  [11.027620, 77.006794], [11.027811, 77.006787], [11.028073701519466, 77.00673947575676]],
+      //E to Auditorium
+      
+    ];
+
+
+
+    // calculateDistances([
+    //     [11.026210282937615, 77.00670030277695],[11.026557210678186, 77.00666006203508], [11.02656279546065, 77.0065604901094]
+    // ])
+    function calculateDistances(locations) {
+  let totalDistance = 0;  // Initialize a variable to store total distance
+  let distances = [];      // Array to hold distances of each path
+  
+  // Loop through all pairs of locations
+  for (let i = 0; i < locations.length - 1; i++) {
+    for (let j = i + 1; j < locations.length; j++) {
+      const pointA = locations[i];
+      const pointB = locations[j];
+
+      // Check if the coordinates are valid (not null or undefined)
+      if (pointA && pointB && pointA.length === 2 && pointB.length === 2) {
+        const [latA, lngA] = pointA;
+        const [latB, lngB] = pointB;
+        
+        // Ensure the coordinates are valid numbers (lat and lng)
+        if (typeof latA === 'number' && typeof lngA === 'number' && 
+            typeof latB === 'number' && typeof lngB === 'number') {
+
+          // Calculate the distance between pointA and pointB using map.distance()
+          const distance = map.distance(pointA, pointB);
+          distances.push({ from: pointA, to: pointB, distance: distance });
+          
+          // Add this distance to the total distance
+          totalDistance += distance;
+          
+          // Log the distance between the two points
+          console.log(`Distance from ${pointA} to ${pointB}: ${distance.toFixed(2)} meters`);
+          return distance.toFixed(2);
+        } else {
+          console.error(`Invalid coordinates: ${pointA} or ${pointB}`);
+        }
+      } else {
+        console.error(`Invalid location data: ${pointA} or ${pointB}`);
+      }
+    }
+  }
+
+  // Log the total distance
+  console.log("Total distance: " + totalDistance.toFixed(2) + " meters");
+
+  return distances;  // Return the distances array if needed
+}
+
+</script>
+  <script src="./Routes/routes.js"></script>
+  <script src="./Routes/gateRoutes.js"></script>
+  <script src="./Routes/ABlockRoutes.js"></script>
+  <script src="./Routes/SFRoutes.js"></script>
+  <script src="./Routes/CRoutes.js"></script>
+  <script src="./Routes/HRRoutes.js"></script>
+  <script src="./Routes/ERoutes.js"></script>
+  <script src="./Routes/AuditoriumRoutes.js"></script>
+  <script src="./Routes/MandapamRoutes.js"></script>
+  <script src="./Routes/ExamHallRoutes.js"></script>
+  <script src="./Routes/OfficeRoutes.js"></script>
+  <script src="./Routes/LBlockRoutes.js"></script>
+</body>
+</html>
